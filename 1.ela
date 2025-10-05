@@ -2,9 +2,9 @@
 import io; 
 
 // Remove me before starting!!
-#error "Remove this line, as this tutorial is not expected to compile until it's been modified by the reader"
+// #error "Remove this line, as this tutorial is not expected to compile until it's been modified by the reader"
 
-// We can use attributes (@[...]) on an statement.
+// We can use attributes (@[...]) on any statement.
 // here, we use @[entry] to declare that this function
 // should be the entry point for our executable.
 // This is optional if you have a function outside of any module called 'main'
@@ -44,8 +44,10 @@ fn main() {
 
   mut x3: s32; // can be written to, 'mutable'
 
-  // can _never_ be written to, and this is NOT the same as say 'x: s32;'
-  // this is a compile-time-only value, similar to constexpr/enum in c, or
+
+  const x4 := 0; 
+  // 'const' variables can _never_ be written to, and this is NOT the same as say 'x: s32;'
+  // this is a compile-time constant value, similar to constexpr/enum in c, or
   // const in rust.
 
   /*
@@ -59,8 +61,6 @@ fn main() {
     and arbitrary nominal types are qualified for const, i.e anything without pointers (excluding *u8 strings)
     can be const.
   */
-
-  const x4 := 0;
 
   /*
     Now, since we're thinking about mutability, its' probably a good time to just
@@ -93,9 +93,9 @@ fn main() {
 
 
   // !!! error! "cannot take a mutable pointer to a immutable variable!"
-  p2 : *mut s32 = &mut x5;
+  // p2 : *mut s32 = &mut x5;
   // !!! error! "cannot dereference into an immutable pointer!"
-  *p1 = 0;
+  // *p1 = 0;
 
   /*
     So, comment that out (if you're compiling along as you follow this, which is reccomended.)
@@ -137,6 +137,29 @@ fn main() {
 
 
   /* 
+    Pointer arithmetic 
+
+    Pointer arithmetic is fully allowed in Ela, and is pretty typical in normal addition and multiplication scenarios.
+    There is one scenario that Ela is distinctly different from other languages: using a '[]' subscript operator on a pointer.
+    We have a special operator, ![], aka the subscript operator, for performing these kind of reads and writes on pointers.
+    this is not only for clarity when performing a relatively dangerous operation, but also, for the scenario where
+    you're within a '*self or *mut self' method, and intend to call an Index operator overload, but instead would unintentionally
+    do a subscript operation on the *self pointer, which is sizeof(Self). More often than not, this is not intended, so it's made explicit.
+
+    here are a few examples of pointer arithmetic:
+  */
+
+  // Pointers to and from *void or *u8 implicitly cast in Ela. much like C.
+  malloced_p: *mut u32 = std::c::malloc(sizeof(u32) * 100);
+
+  // (malloced_p + 99) = 10;  // !!! error! invalid pointer arithmetic, use the ![] operator.
+  malloced_p![99] = 10;
+
+  // read with + 99, implicitly this will do 99 * sizeof(PointeeType).
+  // No need to multiply by sizeof(T)
+  io::printlnf("malloced_p + 99 = %, expected 10.", (*(malloced_p + 99),));
+
+  /* 
     Arrays 
       Ela has fixed-sized arrays just like C, and unlike Rust, our slice type is completely independent of said arrays.
       We share the rust style declaration syntax, however, as seen below:
@@ -146,7 +169,7 @@ fn main() {
 
   // unlike C, we cannot declare a string as an array of bytes. 
   // !!! error! expected "[u8; 11]", got "*const u8"
-  a1: [u8; 11] = "Hello, world!"c; // the little 'c' at the end denotes a c string, we'll talk about that later.
+  // a1: [u8; 11] = "Hello, world!"c; // the little 'c' at the end denotes a c string, we'll talk about that later.
 
   // however, arrays can implicitly cast to pointers for manipulation. so below is valid:
 
@@ -302,7 +325,7 @@ fn main() {
   // however, below is invalid, because we have no idea what type you're trying to
   // construct, and we don't try to guess and assign the best matching type (as of right now, maybe a future feature)
   // in the future we may even allow this to create a new type, like Zig does.
-  vec34 := .{ x: 0, y: 0, z: 0}; // !!! error! Cannot use an initializer list on a pointer, or a scalar type (int/float, etc), got void
+  // vec34 := .{ x: 0, y: 0, z: 0}; // !!! error! Cannot use an initializer list on a pointer, or a scalar type (int/float, etc), got void
 
   /* 
     Another form of compound literals are reffered to as 'Collection Initializers'.
@@ -316,7 +339,7 @@ fn main() {
   array: [s32; 3] = .[0, 1, 2]; // valid
 
   // However, the array must be initialized directly from a collection initializer literal, not by lvalue.
-  array0: [s32; 3] = init_list; // !!! error! expected "[s32; 3]", got "InitList!<s32>" 
+  // array0: [s32; 3] = init_list; // !!! error! expected "[s32; 3]", got "InitList!<s32>" 
 
 
   /* 
@@ -332,14 +355,14 @@ fn main() {
     take it as a T: AsSlice!<u8> generic where constraint. more on that later.
   */
 
-  list: List!<u8> = List!<u8>::init(.[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-  ptr: *u8 = std::c::malloc(sizeof(u8) * 11);
+  list1: List!<u8> = List!<u8>::init(.[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+  ptr: *u8 = std::c::malloc(sizeof(u8) * 13);
   
-  str_slice := [u8]::from("Hello, World!");
+  str_slice := "Hello, World!".as_slice();
 
-  std::c::memcpy(ptr, str_slice.data, 11); // set the data of the ptr to = "Hello, World!";
-  from_ptr := [u8]::from_ptr(ptr, u8);
-  from_list := list.as_slice();
+  std::c::memcpy(ptr, str_slice.data, 13); // set the data of the ptr to = "Hello, World!";
+  from_ptr := [u8]::from(ptr, u8);
+  // from_list := list1.as_slice();
 
 
   /* 
