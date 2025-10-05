@@ -4,7 +4,7 @@ import io;
   Note: for the sake of continuity in the tutorial, all of the code is within the main function.
   Types declared within functions are local to that scope.
   Impl's done within functions are propagated to the types that they affect.
-  Typically, doing an impl in a function is not advised, as it hides behaviour.
+  Typically, doing an impl in a function is not advised, as it hides behavior.
   There are reasons it is allowed, which will be covered much later when we get to metaprogramming
   and compile time evaluation.
 */
@@ -15,7 +15,7 @@ fn main() {
     structs are basically equivalent to C structs, with some minor quality of life improvements (default values for fields)
 
     structs have completely predictable layout, they are never reordered for efficiency by the compiler.
-    they follow the same sizing and aligment conventions as the C ABI.
+    they follow the same sizing and alignment conventions as the C ABI.
   */
 
   // declare a 2 member struct of floats that have default values of 1.0 unless overwritten by an aggregate initializer.
@@ -23,7 +23,7 @@ fn main() {
 
   /* 
     while we'll cover choice types later (tagged unions), you can use anonymous sub-structs and
-    unions to provide compatability with C libraries, as shown here:
+    unions to provide compatibility with C libraries, as shown here:
   */
 
   union Vec2Union { 
@@ -47,7 +47,7 @@ fn main() {
   // say for a manually-implemented tagged union (again, we have a type that does this for you with pattern matching, but for C interop)
 
   // Enumerators in ela work just like C++, they're just named integers behind a type.
-  // Theyre strongly typed compared to C, but same concept.
+  // They're strongly typed compared to C, but same concept.
   enum UnionTag {
     Null,
     String,
@@ -71,7 +71,7 @@ fn main() {
   /* 
     Now is probably a good time to talk about choice types.
 
-    'choice' types are just tagged unions just like shown above, with some special syntax to make it alot easier and 
+    'choice' types are just tagged unions just like shown above, with some special syntax to make it a lot easier and 
     much safer to use.
 
     here we'll declare a choice type 'value' that could be of several value types, just like 'TaggedUnion' above.
@@ -86,7 +86,7 @@ fn main() {
   }
 
   // Now, when we default-initialize a choice type, it's "discriminant" (the index of the occupied slot)
-  // is placed to an invald value that points to none of the variants listed.
+  // is placed to an invalid value that points to none of the variants listed.
   // this is the one type in Ela that zero initialization effectively means garbage initialized, except
   // it is "zero'd", because we have no idea if the first field has data or not, so THAT would be garbage
   // initialization.
@@ -204,8 +204,8 @@ fn main() {
       }
     }
 
-    This is very unsafe though, because if the discriminant mismatches, or the data hasnt been properly initialized,
-    reads and writes are undefined behaviour as you may be reading from or writing to some other variants data, 
+    This is very unsafe though, because if the discriminant mismatches, or the data hasn't been properly initialized,
+    reads and writes are undefined behavior as you may be reading from or writing to some other variants data, 
     since unions share a block of memory for all subtypes.
   */
 
@@ -220,10 +220,10 @@ fn main() {
   /*  
     Traits
 
-    traits (or more known as interfaces) are a way to define a set of behaviours for any type, provided via methods
+    traits (or more known as interfaces) are a way to define a set of behaviors for any type, provided via methods
     or associated functions ('static methods' for C like users.)
 
-    They are very helpful in composing behaviour, and they have some interesting features. for Rust users, 
+    They are very helpful in composing behavior, and they have some interesting features. for Rust users, 
     this is all self explanatory, however we don't have quite as an expansive trait system as Rust.
 
 
@@ -297,8 +297,8 @@ fn main() {
   io::println(one);
 
 
-  // Now, since 'one' is an immutable variable, we can only call methods that arent '*mut self'.
-  // 'mut self' (no pointer) is fine because it always takes a shallow copy and doesn't mutate the reciever.
+  // Now, since 'one' is an immutable variable, we can only call methods that aren't '*mut self'.
+  // 'mut self' (no pointer) is fine because it always takes a shallow copy and doesn't mutate the receiver.
 
   /* mut */ halved := one.halved();
   io::println(halved);
@@ -319,7 +319,7 @@ fn main() {
   /* 
     Now with that covered, let's talk traits, since that just expands on this idea. 
     trait's are similar to impls, except they outline the template of what an impl needs to define,
-    and creates a behavioural contract for any type that implements them.
+    and creates a behavioral contract for any type that implements them.
   */
 
   // here we declare a contract that says whatever implements this has to have a to_string function that takes a *self and return a String
@@ -327,7 +327,7 @@ fn main() {
     fn to_string(*self) -> String;
   }
 
-  t: ToString; // !!! error! You cannot have an instance of a 'trait' type -- it is sizeless and only used at compile time to enforce rules.
+  t: ToString; // !!! error! You cannot have an instance of a 'trait' type -- it is size-less and only used at compile time to enforce rules.
 
   // First, to use the trait, we have to implement it for something. let's do that here for Vec2.
   impl ToString for Vec2 {
@@ -343,10 +343,10 @@ fn main() {
   io::printlnf("halved_string = %", (halved_string,));
 
   // Now, let's add some associated functions, through a different trait. 
-  // But, we're going to require that anyone who implements our new trait, GetNegativeOne, 
-  // has implemented HasGetFn already through a trait bounds, with this colon syntax
+  // But, we're going to require that anyone who implements our new trait, DefaultString, 
+  // has implemented ToString already through a trait bounds, with this colon syntax
 
-  // The semantics of anything following : are similar to 'where' clauses, meaning it can have comma seperated binding
+  // The semantics of anything following : are similar to 'where' clauses, meaning it can have comma separated binding
   // expressions with '|' for 'or' and '&' for 'and', and of course it's not bitwise, they're logical relational expressions,
   // just differentiating.
 
@@ -417,7 +417,7 @@ fn main() {
 
     No generic functions:
       No generic methods can be present in a dyn compatible trait. This doesn't mean that dyn traits cant be generic,
-      it just means there cant be seperately generic functions within a dyn trait.
+      it just means there cant be separately generic functions within a dyn trait.
 
     No returning 'Self':
       You cannot return -> 'Self' or '*Self' at all, since we don't know the size of the type implementing it, and
@@ -456,7 +456,7 @@ fn main() {
   io::printlnf("dyn_string_from_vec2 = %", (dyn_string_from_vec2,));
 
   // The thing about dyn's is that it can change the underlying type at any time during runtime.
-  // this way, we can represent collections of objects of shared behaviour without needing some crazy generics
+  // this way, we can represent collections of objects of shared behavior without needing some crazy generics
 
   // to show this we'll use s32 as another example implementer
   impl ToString for s32 {
@@ -471,7 +471,7 @@ fn main() {
   io::printlnf("dyn_string_from_s32 = %", (dyn_string_from_s32,));
 
   // This concept is incredibly useful, and 'dyn' objects are essentially a struct { instance: *void, vtable: *void },
-  // meaning they're always 16 bytes on 64 bit systems, so theyre rather cheap for how much you can get out of them.
+  // meaning they're always 16 bytes on 64 bit systems, so they're rather cheap for how much you can get out of them.
 
 
   /* 
@@ -482,7 +482,7 @@ fn main() {
 
     the generic syntax is always '!<>', for disambiguation reasons with expressions and clarity.
 
-    A lot of the tutorial has used generics, since they're present all over in the stdlib, because theyre irreplacably useful.
+    A lot of the tutorial has used generics, since they're present all over in the stdlib, because they're irreplaceably useful.
 
     note: generic functions can infer generic arguments, so for a lot of these examples, you haven't even seen the generic arguments being passed.
   */
@@ -527,7 +527,7 @@ fn main() {
   }
 
   /*
-    when using 'impl' on a generic type without proividing a concrete set of arguments,
+    when using 'impl' on a generic type without providing a concrete set of arguments,
     you have to do some extra work to fetch those arguments to provide to your target type.
     this is how we do that:
   */
