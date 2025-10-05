@@ -359,9 +359,10 @@ fn main() {
   str_slice := "Hello, World!".as_slice();
 
   std::c::memcpy(ptr, str_slice.data, 13); // set the data of the ptr to = "Hello, World!";
-  // from_ptr := [u8]::from(ptr, u8);
-  // from_list := list1.as_slice();
+  from_ptr := [u8]::from(ptr, 13);
+  from_list := list1.as_slice();
 
+  io::println(from_list);
 
   /* 
     In a few of the above examples we used functions, loops & structs, 
