@@ -313,7 +313,7 @@ fn main() {
   }
 
   // to fix this, add mut to 'halved := ...'.
-  // halved.zero_x(); // !!! error! cannot call a '*mut self' method with an immutable variable, consider adding 'mut' to the declaration
+  halved.zero_x(); // !!! error! cannot call a '*mut self' method with an immutable variable, consider adding 'mut' to the declaration
 
 
   /* 
@@ -327,7 +327,7 @@ fn main() {
     fn to_string(*self) -> String;
   }
 
-  // t: ToString; // !!! error! You cannot have an instance of a 'trait' type -- it is sizeless and only used at compile time to enforce rules.
+  t: ToString; // !!! error! You cannot have an instance of a 'trait' type -- it is sizeless and only used at compile time to enforce rules.
 
   // First, to use the trait, we have to implement it for something. let's do that here for Vec2.
   impl ToString for Vec2 {
@@ -363,7 +363,7 @@ fn main() {
     }
   }
 
-  // Vec2::get_default_string(); // !!! error! use of undeclared identifier 'get_default_string'
+  Vec2::get_default_string(); // !!! error! use of undeclared identifier 'get_default_string'
 
   // Just because we bound DefaultString to ToString, doesn't mean it's available to all implementers
   // of to ToString. In this case, we can just use an empty impl to add the default trait function.
@@ -501,7 +501,7 @@ fn main() {
   // We'll make another one, for f32's.
   f32_vec2 := Vector2!<f32>.{ x: 0, y: 0 };
 
-  // f64_vec2 = f32_vec2; // !!! error! Type error in binary expression: cannot convert between Vector2!<f64> and Vector2!<f32>
+  f64_vec2 = f32_vec2; // !!! error! Type error in binary expression: cannot convert between Vector2!<f64> and Vector2!<f32>
 
   // each instantiation of a generic, that is, unique generic arguments provided to create it's concrete type,
   // is distinct and they are not convertible to each other.
@@ -542,7 +542,7 @@ fn main() {
   zeroed_s32 := Vector2!<s32>::zero();
   io::printlnf("zeroed_s32 = %", (zeroed_s32,));
 
-  // negative_one_s32 := Vector2!<s32>::negative_one(); // !!! error! use of undeclared identifier 'negative_one'
+  negative_one_s32 := Vector2!<s32>::negative_one(); // !!! error! use of undeclared identifier 'negative_one'
   // We only provided 'negative_one' to Vector2!<f32>, so we cant use s32 and expect it to work.
   negative_one_f32 := Vector2!<f32>::negative_one();
   io::printlnf("negative_one_f32 = %", (negative_one_f32,));
