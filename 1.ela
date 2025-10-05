@@ -2,7 +2,7 @@
 import io; 
 
 // We can use attributes (@[...]) on any statement.
-// here, we use @[entry] to declare that this function
+// Here, we use @[entry] to declare that this function
 // should be the entry point for our executable.
 // This is optional if you have a function outside of any module called 'main'
 @[entry]
@@ -44,7 +44,7 @@ fn main() {
 
   const x4 := 0; 
   // 'const' variables can _never_ be written to, and this is NOT the same as say 'x: s32;'
-  // this is a compile-time constant value, similar to constexpr/enum in c, or
+  // This is a compile-time constant value, similar to constexpr/enum in c, or
   // const in rust.
 
   /*
@@ -61,14 +61,14 @@ fn main() {
 
   /*
     Now, since we're thinking about mutability, its' probably a good time to just
-    dive into pointers. pointers have const/mut association by default,
+    dive into pointers. Pointers have const/mut association by default,
 
-    you cannot write into a const pointer.
-    you cannot assign a constant pointer to a mutable pointer (without casting, more about that later.)
+    You cannot write into a const pointer.
+    You cannot assign a constant pointer to a mutable pointer (without casting, more about that later.)
 
-    this adds significant clarity to api, what's mutating, what's not.
+    This adds significant clarity to api, what's mutating, what's not.
 
-    associating the mutability with the pointer syntax itself vs. the variable declaration
+    Associating the mutability with the pointer syntax itself vs. the variable declaration
     creates clarity compared to C/C++, where const-ness and pointer const-ness is a generally
     confusing and strange syntax.
 
@@ -77,12 +77,12 @@ fn main() {
     Let's take a look at the syntax.
   */
 
-  // first let's declare some memory we can take a pointer to:
+  // First let's declare some memory we can take a pointer to:
   x5 := 0;
 
   // Now, let's grab a const pointer to it. we can use '&' (implied const) or '&const' to be explicit.
   p : *const s32 = &const x5;
-  // let's look at the more terse version:
+  // Let's look at the more terse version:
   p1 : *s32 = &x5;
 
   // Note that the asterisk/star (*) always comes before the type or mutability specifier.
@@ -105,7 +105,7 @@ fn main() {
 
   mut x6 := 0;
   p2: *mut s32 = &mut x6; // 👍
-  *p2 = 100; // dereference into it, write 100. 👍
+  *p2 = 100; // Dereference into it, write 100. 👍
   io::println(*p2); // prints '100'
 
   /* 
