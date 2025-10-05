@@ -1,9 +1,6 @@
 // Import the 'io' module, used for printing in this tutorial.
 import io; 
 
-// Remove me before starting!!
-// #error "Remove this line, as this tutorial is not expected to compile until it's been modified by the reader"
-
 // We can use attributes (@[...]) on any statement.
 // here, we use @[entry] to declare that this function
 // should be the entry point for our executable.
@@ -91,11 +88,13 @@ fn main() {
   // Note that the asterisk/star (*) always comes before the type or mutability specifier.
   // Here's some mutable pointer declarations.
 
+  // Remove me before using 'ela r 1.ela' to compile and run this.
+  #error "Remove this line, as this tutorial is not expected to compile until it's been modified by the reader"
 
   // !!! error! "cannot take a mutable pointer to a immutable variable!"
-  // p2 : *mut s32 = &mut x5;
+  p2 : *mut s32 = &mut x5;
   // !!! error! "cannot dereference into an immutable pointer!"
-  // *p1 = 0;
+  *p1 = 0;
 
   /*
     So, comment that out (if you're compiling along as you follow this, which is reccomended.)
@@ -152,7 +151,7 @@ fn main() {
   // Pointers to and from *void or *u8 implicitly cast in Ela. much like C.
   malloced_p: *mut u32 = std::c::malloc(sizeof(u32) * 100);
 
-  // (malloced_p + 99) = 10;  // !!! error! invalid pointer arithmetic, use the ![] operator.
+  *(malloced_p + 99) = 10;
   malloced_p![99] = 10;
 
   // read with + 99, implicitly this will do 99 * sizeof(PointeeType).
@@ -169,7 +168,7 @@ fn main() {
 
   // unlike C, we cannot declare a string as an array of bytes. 
   // !!! error! expected "[u8; 11]", got "*const u8"
-  // a1: [u8; 11] = "Hello, world!"c; // the little 'c' at the end denotes a c string, we'll talk about that later.
+  a1: [u8; 11] = "Hello, world!"c; // the little 'c' at the end denotes a c string, we'll talk about that later.
 
   // however, arrays can implicitly cast to pointers for manipulation. so below is valid:
 
@@ -325,7 +324,7 @@ fn main() {
   // however, below is invalid, because we have no idea what type you're trying to
   // construct, and we don't try to guess and assign the best matching type (as of right now, maybe a future feature)
   // in the future we may even allow this to create a new type, like Zig does.
-  // vec34 := .{ x: 0, y: 0, z: 0}; // !!! error! Cannot use an initializer list on a pointer, or a scalar type (int/float, etc), got void
+  vec34 := .{ x: 0, y: 0, z: 0}; // !!! error! Cannot use an initializer list on a pointer, or a scalar type (int/float, etc), got void
 
   /* 
     Another form of compound literals are reffered to as 'Collection Initializers'.
@@ -339,7 +338,7 @@ fn main() {
   array: [s32; 3] = .[0, 1, 2]; // valid
 
   // However, the array must be initialized directly from a collection initializer literal, not by lvalue.
-  // array0: [s32; 3] = init_list; // !!! error! expected "[s32; 3]", got "InitList!<s32>" 
+  array0: [s32; 3] = init_list; // !!! error! expected "[s32; 3]", got "InitList!<s32>" 
 
 
   /* 
@@ -361,7 +360,7 @@ fn main() {
   str_slice := "Hello, World!".as_slice();
 
   std::c::memcpy(ptr, str_slice.data, 13); // set the data of the ptr to = "Hello, World!";
-  from_ptr := [u8]::from(ptr, u8);
+  // from_ptr := [u8]::from(ptr, u8);
   // from_list := list1.as_slice();
 
 
