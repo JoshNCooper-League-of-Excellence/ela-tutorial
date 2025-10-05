@@ -1,0 +1,350 @@
+// Import the 'io' module, used for printing in this tutorial.
+import io; 
+
+// Remove me before starting!!
+#error "Remove this line, as this tutorial is not expected to compile until it's been modified by the reader"
+
+// We can use attributes (@[...]) on an statement.
+// here, we use @[entry] to declare that this function
+// should be the entry point for our executable.
+// This is optional if you have a function outside of any module called 'main'
+@[entry]
+fn main() {
+  /*
+    Declaring variables:
+
+    there's three primary syntax forms for declaring variables,
+    with a few variations due to mutability.
+
+    However, the primary forms are as follow:
+  */
+
+  x: s32 = 0;
+
+  // and
+
+  x1 := 0;
+
+  /*
+    The two above declarations are equivalent (despite variable naming)
+    we declare an immutable s32 called 'x' (or x1) of type 's32' with a
+    default value of 0.
+
+    in Ela, not providing an initializer always means zero-initialization.
+    so the following will be equivalent to the former declarations as well.
+  */
+
+  x2: s32;
+  io::println(x2); // prints 0.
+
+  /*
+    Now, as I mentioned, there are a few variants of this due to mutability.
+    We'll talk about pointers later, but here are the variants of this:
+  */
+
+  mut x3: s32; // can be written to, 'mutable'
+
+  // can _never_ be written to, and this is NOT the same as say 'x: s32;'
+  // this is a compile-time-only value, similar to constexpr/enum in c, or
+  // const in rust.
+
+  /*
+    for c programmers:
+      enum { x4 = 0 }
+      constexpr int x4 = 0;
+    rust:
+      const x4: i32 = 0;
+
+    an important distinction between those examples and this, is we can infer types,
+    and arbitrary nominal types are qualified for const, i.e anything without pointers (excluding *u8 strings)
+    can be const.
+  */
+
+  const x4 := 0;
+
+  /*
+    Now, since we're thinking about mutability, its' probably a good time to just
+    dive into pointers. pointers have const/mut association by default,
+
+    you cannot write into a const pointer.
+    you cannot assign a constant pointer to a mutable pointer (without casting, more about that later.)
+
+    this adds significant clarity to api, what's mutating, what's not.
+
+    associating the mutability with the pointer syntax itself vs. the variable declaration
+    creates clarity compared to C/C++, where const-ness and pointer const-ness is a generally
+    confusing and strange syntax.
+
+    Additionally, pointers are const by default, in constrast to C or C++, where theyre mutable by default.
+
+    Let's take a look at the syntax.
+  */
+
+  // first let's declare some memory we can take a pointer to:
+  x5 := 0;
+
+  // Now, let's grab a const pointer to it. we can use '&' (implied const) or '&const' to be explicit.
+  p : *const s32 = &const x5;
+  // let's look at the more terse version:
+  p1 : *s32 = &x5;
+
+  // Note that the asterisk/star (*) always comes before the type or mutability specifier.
+  // Here's some mutable pointer declarations.
+
+
+  // !!! error! "cannot take a mutable pointer to a immutable variable!"
+  p2 : *mut s32 = &mut x5;
+  // !!! error! "cannot dereference into an immutable pointer!"
+  *p1 = 0;
+
+  /*
+    So, comment that out (if you're compiling along as you follow this, which is reccomended.)
+
+    We need a 'mut xN: s32' to take a pointer, otherwise we'd just be hacking right past the
+    mutability specifiers, of course. let's make a x6 below and try that again.
+  */
+
+  mut x6 := 0;
+  p2: *mut s32 = &mut x6; // 👍
+  *p2 = 100; // dereference into it, write 100. 👍
+  io::println(*p2); // prints '100'
+
+  /* 
+    Finally, we'll talk about the unfortunate neccesity of having to allow casting from *const to *mut.
+    some things just absolutely require a conversion to avoid writing wrapper or conversion types, 
+    or several versions of functions, so you can simply use an 'as' cast to achieve this.
+
+    One caveat, you cannot cast an immutable variable to a mutable variable. it's not encoded on the type information,
+    and if you're accessing variables, you always have control over their mutability. 
+    
+    You _could_ hack around it, by taking a const pointer to an immutable variable, 
+    and casting it to *mut, but why would you?
+
+    Note: all casting is done with the 'as' statement in Ela.
+  */
+
+  // We'll reuse x6, the previous mut s32.
+  p3 := &x6;
+
+  p3_mut := p3 as *mut s32;
+
+  // dereference into it, write 10 👍
+  *p3_mut = 10;
+  io::println(*p3_mut); // prints '10' 
+
+  // Don't do the above unless you _have_ to. 
+  // it's a rare case, but you may eventually encounter it in some capacity
+
+
+  /* 
+    Arrays 
+      Ela has fixed-sized arrays just like C, and unlike Rust, our slice type is completely independent of said arrays.
+      We share the rust style declaration syntax, however, as seen below:
+  */
+
+  mut a: [u8; 5]; // An array of 5 unsigned bytes. also zero initialized.
+
+  // unlike C, we cannot declare a string as an array of bytes. 
+  // !!! error! expected "[u8; 11]", got "*const u8"
+  a1: [u8; 11] = "Hello, world!"c; // the little 'c' at the end denotes a c string, we'll talk about that later.
+
+  // however, arrays can implicitly cast to pointers for manipulation. so below is valid:
+
+  // Note: this syntax is a bit advanced, the following tutorials will cover it all though.
+  // if you understand it -- great, but if not, dont worry about it.
+  // functions can be local to other functions :D, however, lambdas and local functions cannot do closures implicitly.
+  fn memset(p: *mut u8, n: u32, value: u8) {
+    // this is a range-based for loop. more on that later too.
+    for i in 0..n { 
+      /*  
+        '![]' syntax is a pointer subscript operator. its different than the normal index operator '[]' for clarity, 
+        and to prevent subtle bugs when intending to call the index operator on a pointer to an array or something 
+        that implements the Index trait.
+      */
+      p![i] = value;
+    }
+  }
+
+  // 'a' implicitly casts to '*mut u8' because it's a mutable variable,
+  // and arrays are just stack allocated pointers with a size associated.
+  memset(a, 5, 1);
+
+  for i in 0..5 {
+    // here we don't have to use the ![] because we havent cast 'a' to a pointer type
+    // also we cast so the formatter doesn't interpret it as a char.
+    io::printlnf("a[%] = %", (i, a[i] as u32)); 
+  }
+  
+
+  /* 
+    Strings
+
+    there are 3 forms of string in Ela, and all are different for good reason. 
+
+    first there's the default string literal type, 'str', which is always constant memory and statically allocated, 
+    and never needs to be freed:
+  */
+
+  string: str = "str: Hello, World!";
+  io::println(string); // prints 'Hello World!'
+
+  /* 
+    next, there's the heap allocted String type, which always needs to be freed.
+    we'll talk about how memory management is typically handled in ela later, for now, this leaks.
+
+    we have to use this 'from' associated function since we need to allocate and 
+    copy the data into the string's buffer.
+  */
+  heap_string: String = String::from("String: Hello, World!");
+  io::println(heap_string); // prints 'Hello World!'
+
+  /* 
+    finally, there's the type that exists purely for C interop, '*u8' or 'c_str'
+    it doesn't have an inherent memory semantic associated with it, just like C, 
+    and whether it needs to be freed or not depends on where it comes from.
+
+    As for the ""c 'c_str literals', those have the same lifetime as a 'str' -- statically allocated
+    in the program's data section, i.e never needs to be freed.
+  */
+  mut c_string: c_str = "*u8: Hello, World!"c;
+  // or
+  mut u8_ptr: *u8 = "*u8: Hello, World!"c;
+  io::println(c_string);
+
+
+  /* 
+    Tuples 
+    Tuples are basically just anonymous structs that require no declaration, they can
+    contain any number of types, and be homogenous or heterogenous.
+
+    theyre useful for one-offs that require quick or simpler initialization, or things that just dont
+    warrant writing a struct just for a pair or few values.
+
+    also, in this section, we'll talk about tuple and struct destructuring, which can be a useful way
+    to expose several values quickly.
+  */
+
+  // a pair of s32's.
+  mut ipair: (s32, s32,) = (0, 0);
+  // f32 and an s32
+  mut fipair: (f32, s32) = (0.0, 0);
+
+  // You can even create tuples with one value. as youll notice in all of these tutorials, this is used quite often,
+  // as our io:: and fmt:: libraries use tuples instead of C style varargs for taking an arbitrary number of values.
+  
+  // you do this by parenthesizing a value and adding a trailing comma to that value.
+  mut single_tuple := (0,);
+
+
+  /* 
+    destructuring
+
+    destructures can be taken by value, mutable value, immuntable pointer, or mutable pointer 
+    (the mutable versions are dependent on source tuple variable's mutability)
+
+    here's a couple examples:
+  */
+
+  // iA is mutable here, iB is not.
+  // iA and iB are initialized with the respective element of the tuple by index,
+  // it's always in order of declaration.
+  mut iA, iB := ipair;
+
+  // ipA is a mutable pointer, ipB is a mutable variable by-value, initialized with the second element of the tuple.
+  &mut ipA, mut ipB := ipair;
+
+  *ipA = 10;
+
+  // Structs can also be destructured in the same exact way,
+
+  struct Vec3 {
+    x: f32, 
+    y: f32,
+    z: f32
+  };
+  vec3: Vec3;
+
+  // The same pointer/mutability semantics apply to this kind of destructuring.
+  vX, vY, vZ := vec3;
+
+  // Note: both of these types of destructuring are also available in for loops, for the left hand side.
+  mut list: List!<Vec3> = List!<Vec3>::init(.[
+    .{ x: 0, y: 0, z: 0}
+  ]);
+
+  mut loop_index: u32;
+  for x, &mut y, &z in list {
+    io::printlnf("destructured list[%] = .{ %, %, % }", (loop_index++, x, *y, *z));
+  }
+
+
+  /* 
+    compound literals
+
+    creating structs in Ela is done almost exclusively via compound literals, aka aggregate initializers, 
+    initializer lists, etc. there are two basic forms of the syntax:
+  */
+
+  // Note: in Ela, there is no requirement that all fields must be assigned in a compound literal.
+  // Anything not assigned will be zero initialized.
+
+  vec31: Vec3 = Vec3.{ x: 0, y: 0, z: 0 }; 
+  // ^^
+  // Explicitly providing the target type.
+
+  vec32: Vec3 = .{ x: 0, y: 0, z: 0 };
+  // ^^
+  // Inferred type from what is expected.
+  // This is not valid if there isn't an "expected type", 
+  // such as return type, initializer type, argument type, etc.
+  // here we expect the expression to be Vec3 since we declared it as such.
+
+  // however, below is invalid, because we have no idea what type you're trying to
+  // construct, and we don't try to guess and assign the best matching type (as of right now, maybe a future feature)
+  // in the future we may even allow this to create a new type, like Zig does.
+  vec34 := .{ x: 0, y: 0, z: 0}; // !!! error! Cannot use an initializer list on a pointer, or a scalar type (int/float, etc), got void
+
+  /* 
+    Another form of compound literals are reffered to as 'Collection Initializers'.
+    we saw this above when we created that list with the ::init() associated method.
+
+    These can be used to initialize fixed-size arrays, or be passed to functions as InitList!<T>
+  */
+
+  init_list: InitList!<s32> = .[0, 1, 2];
+
+  array: [s32; 3] = .[0, 1, 2]; // valid
+
+  // However, the array must be initialized directly from a collection initializer literal, not by lvalue.
+  array0: [s32; 3] = init_list; // !!! error! expected "[s32; 3]", got "InitList!<s32>" 
+
+
+  /* 
+    Slices
+
+    slices are effectively fat pointers in Ela, that is, a pointer to some data, and a length stored with it.
+    they're always non-owning, meaning they never need to be freed even though the ownership of the memory it points to
+    is completely varying based on who made it or how.
+
+    below we'llp make a slice from an array, a pointer and a length, and obtain a slice from a string and array.
+
+    Note: a common way to pass somewhat type-independent strings to api's (allow str, *u8, and String) is to 
+    take it as a T: AsSlice!<u8> generic where constraint. more on that later.
+  */
+
+  list: List!<u8> = List!<u8>::init(.[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  ptr: *u8 = std::c::malloc(sizeof(u8) * 11);
+  
+  str_slice := [u8]::from("Hello, World!");
+
+  std::c::memcpy(ptr, str_slice.data, 11); // set the data of the ptr to = "Hello, World!";
+  from_ptr := [u8]::from_ptr(ptr, u8);
+  from_list := list.as_slice();
+
+
+  /* 
+    In a few of the above examples we used functions, loops & structs, 
+    and other stuff that we havent yet covered. We'll get into some of that in the next tutorial.
+  */
+}
+
