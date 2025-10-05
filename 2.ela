@@ -1,5 +1,13 @@
 import io;
 
+/*  
+  Note: for the sake of continuity in the tutorial, all of the code is within the main function.
+  Types declared within functions are local to that scope.
+  Impl's done within functions are propagated to the types that they affect.
+  Typically, doing an impl in a function is not advised, as it hides behaviour.
+  There are reasons it is allowed, which will be covered much later when we get to metaprogramming
+  and compile time evaluation.
+*/
 fn main() {
   /* 
     Structs and other user defined types.
@@ -536,8 +544,6 @@ fn main() {
 
   // negative_one_s32 := Vector2!<s32>::negative_one(); // !!! error! use of undeclared identifier 'negative_one'
   // We only provided 'negative_one' to Vector2!<f32>, so we cant use s32 and expect it to work.
-
   negative_one_f32 := Vector2!<f32>::negative_one();
   io::printlnf("negative_one_f32 = %", (negative_one_f32,));
-
 }
