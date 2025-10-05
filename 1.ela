@@ -13,7 +13,7 @@ fn main() {
   /*
     Declaring variables:
 
-    there's three primary syntax forms for declaring variables,
+    There are three primary syntax forms for declaring variables,
     with a few variations due to mutability.
 
     However, the primary forms are as follow:
@@ -75,7 +75,7 @@ fn main() {
     creates clarity compared to C/C++, where const-ness and pointer const-ness is a generally
     confusing and strange syntax.
 
-    Additionally, pointers are const by default, in constrast to C or C++, where theyre mutable by default.
+    Additionally, pointers are const by default, in contrast to C or C++, where they're mutable by default.
 
     Let's take a look at the syntax.
   */
@@ -98,10 +98,10 @@ fn main() {
   *p1 = 0;
 
   /*
-    So, comment that out (if you're compiling along as you follow this, which is reccomended.)
+    So, comment that out (if you're compiling along as you follow this, which is recommended.)
 
-    We need a 'mut xN: s32' to take a pointer, otherwise we'd just be hacking right past the
-    mutability specifiers, of course. let's make a x6 below and try that again.
+    'x5' would need to be mutable to take a mutable pointer to it, otherwise we'd be violating
+    mutability rules. Let's make an 'x6' below and try that again.
   */
 
   mut x6 := 0;
@@ -110,31 +110,20 @@ fn main() {
   io::println(*p2); // prints '100'
 
   /* 
-    Finally, we'll talk about the unfortunate neccesity of having to allow casting from *const to *mut.
+    Finally, we'll talk about the unfortunate necessity of having to allow casting from *const to *mut.
     some things just absolutely require a conversion to avoid writing wrapper or conversion types, 
     or several versions of functions, so you can simply use an 'as' cast to achieve this.
-
-    One caveat, you cannot cast an immutable variable to a mutable variable. it's not encoded on the type information,
-    and if you're accessing variables, you always have control over their mutability. 
-    
-    You _could_ hack around it, by taking a const pointer to an immutable variable, 
-    and casting it to *mut, but why would you?
 
     Note: all casting is done with the 'as' statement in Ela.
   */
 
-  // We'll reuse x6, the previous mut s32.
-  p3 := &x6;
-
-  p3_mut := p3 as *mut s32;
-
-  // dereference into it, write 10 👍
-  *p3_mut = 10;
-  io::println(*p3_mut); // prints '10' 
+  p3 := &x5; // We'll reuse x5, the previous immutable s32.
+  p3_mut := p3 as *mut s32; // cast off the immutability
+  *p3_mut = 10; // dereference into it, write 10 👍
+  io::println(x5); // prints '10', even though x5 was initialized as 0 and marked immutable
 
   // Don't do the above unless you _have_ to. 
   // it's a rare case, but you may eventually encounter it in some capacity
-
 
   /* 
     Arrays 
@@ -144,22 +133,22 @@ fn main() {
 
   mut a: [u8; 5]; // An array of 5 unsigned bytes. also zero initialized.
 
-  // unlike C, we cannot declare a string as an array of bytes. 
+  // Unlike C, we cannot declare a string as an array of bytes. 
   // !!! error! expected "[u8; 11]", got "*const u8"
-  a1: [u8; 11] = "Hello, world!"c; // the little 'c' at the end denotes a c string, we'll talk about that later.
+  a1: [u8; 11] = "Hello, world!"c; // The little 'c' at the end denotes a c string, we'll talk about that later.
 
-  // however, arrays can implicitly cast to pointers for manipulation. so below is valid:
+  // However, arrays can implicitly cast to pointers for manipulation. So below is valid:
 
   // Note: this syntax is a bit advanced, the following tutorials will cover it all though.
-  // if you understand it -- great, but if not, dont worry about it.
-  // functions can be local to other functions :D, however, lambdas and local functions cannot do closures implicitly.
+  // If you understand it -- great, but if not, don't worry about it.
+  // Functions can be local to other functions :D, however, lambdas and local functions cannot do closures implicitly.
   fn memset(p: *mut u8, n: u32, value: u8) {
     // this is a range-based for loop. more on that later too.
     for i in 0..n { 
       /*  
-        '![]' syntax is a pointer subscript operator. its different than the normal index operator '[]' for clarity, 
+        '![]' syntax is a pointer subscript operator. It's different than the normal index operator '[]' for clarity, 
         and to prevent subtle bugs when intending to call the index operator on a pointer to an array or something 
-        that implements the Index trait.
+        that implements the 'Index' trait.
       */
       p![i] = value;
     }
@@ -170,8 +159,8 @@ fn main() {
   memset(a, 5, 1);
 
   for i in 0..5 {
-    // here we don't have to use the ![] because we havent cast 'a' to a pointer type
-    // also we cast so the formatter doesn't interpret it as a char.
+    // Here we don't have to use the ![] because we haven't cast 'a' to a pointer type.
+    // We also cast so the formatter doesn't interpret it as a char.
     io::printlnf("a[%] = %", (i, a[i] as u32)); 
   }
   
@@ -179,33 +168,44 @@ fn main() {
   /* 
     Strings
 
-    there are 3 forms of string in Ela, and all are different for good reason. 
+    There are 3 forms of string in Ela, and all are different for good reason. 
 
-    first there's the default string literal type, 'str', which is always constant memory and statically allocated, 
+    First, there's the default string literal type, 'str', which is always constant memory and statically allocated, 
     and never needs to be freed:
   */
 
   string: str = "str: Hello, World!";
   io::println(string); // prints 'Hello World!'
 
-  /* 
-    next, there's the heap allocted String type, which always needs to be freed.
-    we'll talk about how memory management is typically handled in ela later, for now, this leaks.
-
-    we have to use this 'from' associated function since we need to allocate and 
-    copy the data into the string's buffer.
+  /*
+    This type stores the length of the string, which can be accessed with '.length'
   */
+
+  io::println(string.length); // prints '18'
+
+  /* 
+    Next, there's the heap allocated type, 'String', which always needs to be freed.
+    We'll talk about how memory management is typically handled in ela later, for now, this leaks.
+
+    We'll use an associated function, 'from', to allocate and then 
+    copy the str's data into the String's buffer.
+  */
+
   heap_string: String = String::from("String: Hello, World!");
   io::println(heap_string); // prints 'Hello World!'
 
   /* 
-    finally, there's the type that exists purely for C interop, '*u8' or 'c_str'
-    it doesn't have an inherent memory semantic associated with it, just like C, 
+    Finally, there's the type that exists purely for C interop, '*u8' or 'c_str'.
+    It doesn't have an inherent memory semantic associated with it, just like C, 
     and whether it needs to be freed or not depends on where it comes from.
 
-    As for the ""c 'c_str literals', those have the same lifetime as a 'str' -- statically allocated
-    in the program's data section, i.e never needs to be freed.
+    The syntax for c-style literals is the same as for 'str',
+    but with a 'c' after the delimiter (as seen below).
+    These have the same lifetime as a 'str' -- statically allocated
+    in the program's data section, i.e never needs to be freed,
+    but are typed as a *const u8 aka 'c_str'.
   */
+
   mut c_string: c_str = "*u8: Hello, World!"c;
   // or
   mut u8_ptr: *u8 = "*u8: Hello, World!"c;
@@ -217,29 +217,29 @@ fn main() {
     Tuples are basically just anonymous structs that require no declaration, they can
     contain any number of types, and be homogenous or heterogenous.
 
-    theyre useful for one-offs that require quick or simpler initialization, or things that just dont
-    warrant writing a struct just for a pair or few values.
+    They're useful for one-offs that require quick or simpler initialization, or things that just don't
+    warrant writing a struct just for a pair or a few values.
 
-    also, in this section, we'll talk about tuple and struct destructuring, which can be a useful way
+    In this section, we'll also talk about tuple and struct destructuring, which can be a useful way
     to expose several values quickly.
   */
 
   // a pair of s32's.
-  mut ipair: (s32, s32,) = (0, 0);
+  mut ipair: (s32, s32,) = (0, 0); // Trailing commas are ignored.
   // f32 and an s32
   mut fipair: (f32, s32) = (0.0, 0);
 
-  // You can even create tuples with one value. as youll notice in all of these tutorials, this is used quite often,
+  // You can even create tuples with one value. As you'll notice in all of these tutorials, this is used quite often,
   // as our io:: and fmt:: libraries use tuples instead of C style varargs for taking an arbitrary number of values.
   
-  // you do this by parenthesizing a value and adding a trailing comma to that value.
+  // You do this for a single tuple by parenthesizing a value and adding a trailing comma.
   mut single_tuple := (0,);
 
 
   /* 
-    destructuring
+    Destructuring
 
-    destructures can be taken by value, mutable value, immuntable pointer, or mutable pointer 
+    Destructures can be taken by value, mutable value, immutable pointer, or mutable pointer 
     (the mutable versions are dependent on source tuple variable's mutability)
 
     here's a couple examples:
@@ -279,34 +279,33 @@ fn main() {
 
 
   /* 
-    compound literals
+    Compound Literals
 
-    creating structs in Ela is done almost exclusively via compound literals, aka aggregate initializers, 
-    initializer lists, etc. there are two basic forms of the syntax:
+    Creating structs in Ela is done almost exclusively via compound literals, aka aggregate initializers, 
+    initializer lists, etc. There are two basic forms of the syntax:
   */
 
   // Note: in Ela, there is no requirement that all fields must be assigned in a compound literal.
   // Anything not assigned will be zero initialized.
 
   vec31: Vec3 = Vec3.{ x: 0, y: 0, z: 0 }; 
-  // ^^
+  //            ^^^^
   // Explicitly providing the target type.
 
   vec32: Vec3 = .{ x: 0, y: 0, z: 0 };
-  // ^^
+  //     ^^^^
   // Inferred type from what is expected.
-  // This is not valid if there isn't an "expected type", 
+  // This is valid only if there is an "expected type", 
   // such as return type, initializer type, argument type, etc.
-  // here we expect the expression to be Vec3 since we declared it as such.
+  // Here we expect the expression to be Vec3 since we declared it as such.
 
-  // however, below is invalid, because we have no idea what type you're trying to
-  // construct, and we don't try to guess and assign the best matching type (as of right now, maybe a future feature)
-  // in the future we may even allow this to create a new type, like Zig does.
+  // However, below is invalid, because we have no idea what type you're trying to
+  // construct, and we don't try to guess and assign the best matching type.
   vec34 := .{ x: 0, y: 0, z: 0}; // !!! error! Cannot use an initializer list on a pointer, or a scalar type (int/float, etc), got void
 
   /* 
-    Another form of compound literals are reffered to as 'Collection Initializers'.
-    we saw this above when we created that list with the ::init() associated method.
+    Another form of compound literals are referred to as 'Collection Initializers'.
+    We saw this above when we created that list with the ::init() associated method.
 
     These can be used to initialize fixed-size arrays, or be passed to functions as InitList!<T>
   */
@@ -322,11 +321,11 @@ fn main() {
   /* 
     Slices
 
-    slices are effectively fat pointers in Ela, that is, a pointer to some data, and a length stored with it.
-    they're always non-owning, meaning they never need to be freed even though the ownership of the memory it points to
+    Slices are effectively fat pointers in Ela, that is, a pointer to some data, and a length stored with it.
+    They're always non-owning, meaning they never need to be freed even though the ownership of the memory it points to
     is completely varying based on who made it or how.
 
-    below we'llp make a slice from an array, a pointer and a length, and obtain a slice from a string and array.
+    Below we'll make a slice from an array, a pointer and a length, and obtain a slice from a string and array.
 
     Note: a common way to pass somewhat type-independent strings to api's (allow str, *u8, and String) is to 
     take it as a T: AsSlice!<u8> generic where constraint. more on that later.
@@ -344,7 +343,7 @@ fn main() {
 
   /* 
     In a few of the above examples we used functions, loops & structs, 
-    and other stuff that we havent yet covered. We'll get into some of that in the next tutorial.
+    and other stuff that we haven't yet covered. We'll get into some of that in the next tutorial.
   */
 }
 
