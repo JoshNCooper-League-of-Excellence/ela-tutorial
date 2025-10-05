@@ -290,7 +290,7 @@ fn main() {
     }
   }
 
-  // So now' lets look at calling some of these methods / associated functions.
+  // So now, lets look at calling some of these methods / associated functions.
   // we'll start with getting a unit Vec2 from the 'one' function.
   
   mut one := Vec2::one();
